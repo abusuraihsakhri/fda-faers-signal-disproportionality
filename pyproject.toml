@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fda-faers-signal-disproportionality"
+version = "2.0.0"
+description = "FAERS-Sentinel: PRR, ROR & Bayesian Information Component (IC) Engine"
+readme = "README.md"
+authors = [{ name = "Dr. Abu Suraih Sakhri", email = "abusuraih@example.com" }]
+license = { text = "MIT" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Security/Cryptography",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+requires-python = ">=3.9"
+dependencies = []
+
+[project.scripts]
+fda-faers-signal-disproportionality = "faers_sentinel.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/abusuraihsakhri/fda-faers-signal-disproportionality"
+Repository = "https://github.com/abusuraihsakhri/fda-faers-signal-disproportionality.git"
