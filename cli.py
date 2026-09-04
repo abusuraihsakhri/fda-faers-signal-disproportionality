@@ -4,7 +4,13 @@ Command Line Interface for Fda Faers Signal Disproportionality.
 import argparse
 import csv
 import json
+import os
 import sys
+
+# Ensure AUDIT_SECRET_KEY is set for CLI usage
+if not os.getenv("AUDIT_SECRET_KEY"):
+    os.environ["AUDIT_SECRET_KEY"] = "cli-dev-key-change-in-production-2026"
+
 from agents.models import SystemTaskPayload
 from agents.supervisor import SystemSupervisor
 from agents.base import AuditLogger

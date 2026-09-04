@@ -7,7 +7,8 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - AUDIT_SECRET_KEY=fda-faers-signal-disproportionality-prod-audit-key-2026
+      # IMPORTANT: Change this in production! Use a secrets manager or Docker secrets.
+      - AUDIT_SECRET_KEY=${AUDIT_SECRET_KEY:-change-me-in-production-use-strong-random-key}
       - MODEL_PROVIDER=mock
     restart: unless-stopped
     healthcheck:

@@ -2,9 +2,10 @@
 FastAPI REST API Server for Fda Faers Signal Disproportionality.
 """
 from typing import Dict, Any, List
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from .base import AuditLogger, PHIGuard
+from .base import AuditLogger, PHIGuard, SecurityException
 from .models import SystemTaskPayload, ConsensusDossier
 from .supervisor import SystemSupervisor
 
@@ -21,9 +22,17 @@ class ChatRequest(BaseModel):
     query: str
 
 
+@app.exception_handler(SecurityException)
+async def security_exception_handler(request: Request, exc: SecurityException):
+    return JSONResponse(
+        status_code=400,
+        content={"error": "Security violation", "detail": str(exc)},
+    )
+
+
 @app.get("/health")
 def health():
-    return {"status": "HEALTHY", "service": "fda-faers-signal-disproportionality", "domain": "Post-Quantum Cryptography & Hardware Security", "standard": "NIST FIPS 203/204/205 / ISO/IEC 17825 Standards", "version": "3.0.0-ENTERPRISE"}
+    return {"status": "HEALTHY", "service": "fda-faers-signal-disproportionality", "domain": "Pharmacovigilance", "standard": "WHO-UMC & FDA FAERS Signal Detection", "version": "3.0.0-ENTERPRISE"}
 
 
 @app.get("/metrics")

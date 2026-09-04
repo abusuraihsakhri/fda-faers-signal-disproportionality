@@ -1,7 +1,6 @@
 """
 Prometheus Operational Metrics Exporter for fda-faers-signal-disproportionality.
 """
-import time
 from typing import Dict, Any
 
 class SystemMetricsCollector:
