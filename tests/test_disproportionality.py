@@ -40,7 +40,7 @@ def test_zeros_are_explicitly_undefined_without_correction():
 
 @pytest.mark.parametrize("counts", [
     (-1, 2, 3, 4), (1.5, 2, 3, 4), (True, 2, 3, 4),
-    ("1", 2, 3, 4), (0, 0, 0, 0)
+    ("1", 2, 3, 4), (10**12 + 1, 1, 1, 1), (0, 0, 0, 0)
 ])
 def test_invalid_counts(counts):
     with pytest.raises(ValueError):
