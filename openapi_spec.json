@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Fda Faers Signal Disproportionality API",
-    "description": "Enterprise Distributed Component Platform (Clinical & Cryptographic AI) adhering to CAP / CLSI / NIST Standards.",
-    "version": "3.0.0-ENTERPRISE",
+    "description": "Exploratory FAERS-style 2x2 reporting disproportionality and retained legacy telemetry endpoints; no causality inference.",
+    "version": "2.1.0",
     "contact": {
       "name": "Dr. Abu Suraih Sakhri",
       "url": "https://github.com/abusuraihsakhri"
@@ -22,7 +22,7 @@
     },
     "/metrics": {
       "get": {
-        "summary": "Prometheus operational metrics",
+        "summary": "JSON counters for legacy runtime status (not Prometheus format)",
         "responses": {
           "200": {
             "description": "Prometheus text metrics"
@@ -32,7 +32,7 @@
     },
     "/api/audit": {
       "post": {
-        "summary": "Dispatch task payload across specialized workers",
+        "summary": "Run retained legacy telemetry threshold evaluation (not FAERS PRR/ROR)",
         "requestBody": {
           "content": {
             "application/json": {
@@ -76,7 +76,7 @@
     },
     "/api/chat": {
       "post": {
-        "summary": "Air-gapped supervisory conversational assistant",
+        "summary": "Run deterministic mock supervisor chat (no external LLM)",
         "requestBody": {
           "content": {
             "application/json": {
@@ -103,12 +103,79 @@
     },
     "/api/audit/logs": {
       "get": {
-        "summary": "Retrieve and cryptographically verify HMAC audit trail",
+        "summary": "Retrieve authenticated legacy audit trail",
         "responses": {
           "200": {
             "description": "Cryptographic audit trail"
           }
+        },
+        "security": [
+          {
+            "AuditViewBearer": []
+          }
+        ]
+      }
+    },
+    "/api/signal": {
+      "post": {
+        "summary": "Compute PRR, ROR, Yates chi-square and crude observed/expected IC",
+        "description": "Hypothesis-generating case-reporting associations; crude IC is not Bayesian BCPNN.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "a",
+                  "b",
+                  "c",
+                  "d"
+                ],
+                "properties": {
+                  "a": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "b": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "c": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "d": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "continuity_correction": {
+                    "type": "boolean",
+                    "default": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Descriptive statistics, intervals and screening flag"
+          },
+          "422": {
+            "description": "Invalid counts"
+          }
         }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "AuditViewBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Token supplied by AUDIT_VIEW_TOKEN; logging must be explicitly configured."
       }
     }
   }
