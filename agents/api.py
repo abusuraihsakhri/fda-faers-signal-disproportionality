@@ -3,9 +3,10 @@ FastAPI REST API Server for Fda Faers Signal Disproportionality.
 """
 import os
 import hmac
+from pathlib import Path
 from typing import Dict, Any, List
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from pydantic import BaseModel, Field
 from .base import AuditLogger, PHIGuard, SecurityException
 from faers_sentinel.disproportionality import calculate_signal
@@ -31,6 +32,11 @@ async def security_exception_handler(request: Request, exc: SecurityException):
         status_code=400,
         content={"error": "Security violation", "detail": str(exc)},
     )
+
+
+@app.get("/", include_in_schema=False)
+def browser_application():
+    return FileResponse(Path(__file__).resolve().parents[1] / "web" / "index.html")
 
 
 @app.get("/health")
