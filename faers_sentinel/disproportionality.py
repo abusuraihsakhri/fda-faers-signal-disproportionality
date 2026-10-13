@@ -39,9 +39,11 @@ def calculate_signal(a: int, b: int, c: int, d: int, continuity_correction: bool
     use_correction = continuity_correction and 0 in counts
     aa, bb, cc, dd = (float(x) + (0.5 if use_correction else 0.0) for x in counts)
     prr = ror = prr_interval = ror_interval = None
-    if aa > 0 and bb > 0 and cc > 0 and dd > 0:
+    if aa + bb > 0 and cc + dd > 0 and cc > 0:
         prr = (aa / (aa + bb)) / (cc / (cc + dd))
+    if bb > 0 and cc > 0:
         ror = (aa * dd) / (bb * cc)
+    if aa > 0 and bb > 0 and cc > 0 and dd > 0:
         se_log_prr = math.sqrt(1 / aa - 1 / (aa + bb) + 1 / cc - 1 / (cc + dd))
         se_log_ror = math.sqrt(1 / aa + 1 / bb + 1 / cc + 1 / dd)
         prr_interval = [math.exp(math.log(prr) - 1.96 * se_log_prr),
@@ -66,5 +68,5 @@ def calculate_signal(a: int, b: int, c: int, d: int, continuity_correction: bool
         "continuity_correction_applied": use_correction,
         "evans_screening_flag": signal_flag,
         "note": "Exploratory disproportionality only; no causality or incidence inference. "
-                "Crude IC is not Bayesian BCPNN. Undefined ratios are null.",
+                "Crude IC is not Bayesian BCPNN. Undefined ratios or intervals are null.",
     }
