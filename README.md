@@ -1,184 +1,96 @@
 # FDA FAERS Signal Disproportionality
 
-> **Domain:** Pharmacovigilance & Drug Safety Signal Detection
-> **Reference Guidelines & Standards:** `WHO-UMC & FDA FAERS Signal Detection`
+A reproducible, exploratory pharmacovigilance calculator for **2 × 2 drug–event reporting tables**. Enter counts in the browser, analyze CSV batches offline, or use the Python CLI/API. No FAERS database is bundled or queried automatically.
 
-<div align="center">
+## What it calculates
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-3776AB.svg?logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688.svg?logo=fastapi&logoColor=white)
-![Audit Trail](https://img.shields.io/badge/Audit-HMAC--SHA256_Tamper--Evident-brightgreen.svg)
-![Zero-PHI Guard](https://img.shields.io/badge/Guard-Zero--PHI_Outbound-blue.svg)
-![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker&logoColor=white)
+Given mutually exclusive reporting counts:
 
-</div>
+| | Target adverse event | Other events |
+| --- | ---: | ---: |
+| Target drug | a | b |
+| Other drugs | c | d |
 
----
+- **PRR:** `[a / (a+b)] / [c / (c+d)]`.
+- **ROR:** `(a × d) / (b × c)`.
+- **95% confidence intervals:** large-sample log-Wald intervals for PRR/ROR when all cells are positive.
+- **Yates-corrected chi-square:** 1-degree-of-freedom association statistic using the original counts.
+- **Crude information component:** `log2(a / expected)`, where `expected = (a+b)(a+c) / N`. **This is not a Bayesian BCPNN posterior IC**, nor does it supply an IC025 credibility bound.
+- **Exploratory screening flag:** at least three co-reports, PRR ≥ 2, Yates χ² ≥ 4, with positive counts in all four cells. This deliberately conservative implementation excludes zero-cell tables from the flag. It is not a regulatory determination.
 
-## 📖 What It Does
+An optional Haldane–Anscombe continuity correction adds 0.5 to all four cells **only if any cell is zero**, for ratio and CI estimation. The chi-square, expected count and crude IC use the original counts. Undefined numerical results are returned as `null` in Python or shown as "Undefined" in the browser.
 
-FDA FAERS Signal Disproportionality is a pharmacovigilance signal detection system that analyzes the FDA Adverse Event Reporting System (FAERS) data using proven disproportionality methods:
+**Interpretation:** Disproportionate reporting is not an incidence rate, probability of an adverse reaction, clinical risk estimate, or proof of causality. Reporting practices, confounding by indication, duplicate reports, incomplete case data and background selection all affect results. Review underlying cases and signal-management evidence before any clinical or regulatory action.
 
-- **Proportional Reporting Ratio (PRR)**: Measures the proportion of reports for a specific adverse event with a drug compared to all drugs.
-- **Reporting Odds Ratio (ROR)**: Alternative measure using odds ratios for signal detection.
-- **Bayesian Information Component (IC)**: Bayesian confidence propagation neural network approach.
+## Browser application
 
-The system provides a multi-worker agent architecture that evaluates task payloads against domain-specific thresholds, generates alerts with urgency classifications, and maintains a tamper-evident HMAC-SHA256 audit trail.
+Open [web/index.html](web/index.html) locally in a modern browser. No installation, backend, internet connection, telemetry or external dependency is needed.
 
----
+1. Fill in the four reporting counts and select **Calculate signal**.
+2. Review PRR, ROR, confidence intervals, chi-square, crude IC and the exploratory flag.
+3. To process a batch, choose a CSV containing `a,b,c,d` header fields and optional `drug,event`. Use **Download sample CSV** for the format.
+4. Export the analyzed CSV. Input data remains in browser memory and is never sent to this repository or a server by the static application.
 
-## ⚙️ Key Capabilities & Algorithmic Modules
+The browser limits counts to 0–1,000,000 per cell for numeric precision and accepts a maximum 5 MB CSV with 10,000 records. The Python interface accepts counts up to 10¹² per cell.
 
-- **Deterministic Calculation Engine**: Strict compliance with WHO-UMC & FDA FAERS Signal Detection formulations and thresholds.
-- **Risk & Urgency Classification**: Multi-tier categorization (ROUTINE, ELEVATED_RISK, CRITICAL_STAT_PANIC) with automated clinical action recommendations.
-- **Validation & Guardrails**: Rigorous input bounds checking and anomaly detection with Zero-PHI outbound protection.
-- **Multi-Worker Agent Architecture**: Specialized workers (InvariantQCWorker, SafetyEscalationWorker, ProtocolConformanceWorker) for comprehensive signal evaluation.
+The GitHub Pages deployment workflow publishes `web/` on updates to `master`, provided GitHub Pages is enabled with **GitHub Actions** as the build/deployment source. A public live-application URL is only published here after independent verification.
 
----
+## Python installation and CLI
 
-## 💻 Installation
+Python 3.9 or newer:
 
 ```bash
-pip install -e .
+python -m pip install -e ".[api,test]"
+python -m pytest -v
 ```
 
-### Dependencies
-- Python >= 3.9
-- FastAPI & uvicorn (for REST API server)
-- Pydantic v2 (for data validation)
-- pytest (for testing)
+Compute a signal directly (both supported CLIs):
 
----
-
-## 💻 CLI Quickstart & Usage
-
-### 1. Single Task Evaluation
 ```bash
-python cli.py audit --task-id TASK-001 --target KEY-01 --primary 28.5 --secondary 14.2 --critical --status DISCORDANT
+fda-faers-signal-disproportionality signal --a 30 --b 70 --c 20 --d 880
+python cli.py signal --a 30 --b 70 --c 20 --d 880
 ```
 
-### 2. Batch CSV Processing
-```bash
-python cli.py batch -i sample.csv -o results.csv
+Add `--continuity-correction` to handle zero-cell intervals. The command prints machine-readable JSON and exits with an error on invalid input. A package call is also available:
+
+```python
+from faers_sentinel.disproportionality import calculate_signal
+
+result = calculate_signal(30, 70, 20, 880)
+print(result["prr"], result["ror"], result["evans_screening_flag"])
 ```
 
-### 3. Supervisory Chat Query
-```bash
-python cli.py chat "What is the system status?"
-```
+## REST API
 
-### 4. Verify Audit Trail Integrity
 ```bash
-python cli.py verify-audit
-```
-
-### 5. Launch REST API Server
-```bash
+export AUDIT_SECRET_KEY="$(python -c 'import secrets; print(secrets.token_hex(32))')"
 python cli.py serve --host 127.0.0.1 --port 8000
 ```
 
-### Parameter Reference
-- `--task-id`: Unique task/case identifier (max 128 chars)
-- `--target`: Entity or patient key identifier (max 128 chars)
-- `--primary`: Primary measurement or score (float)
-- `--secondary`: Secondary kinetic or confidence score (float)
-- `--critical`: Emergency escalation flag (boolean)
-- `--status`: Status code or phenotype descriptor (max 64 chars)
-
-### Input Data Schema
-
-| Field | Type | Description | Requirement |
-|:------|:-----|:------------|:------------|
-| `task_id` | string | Unique task / case identifier | Required |
-| `target_identifier` | string | Entity or target identifier | Required |
-| `primary_metric` | float | Primary domain measurement or score | Required |
-| `secondary_metric` | float | Secondary kinetic or confidence score | Optional (default: 0.0) |
-| `is_critical_flag` | boolean | Emergency escalation flag | Optional (default: false) |
-| `status_descriptor` | string | Status code or phenotype descriptor | Optional (default: "NOMINAL") |
-
----
-
-## 🛡️ Security & Enterprise Architecture
-
-* **Zero-PHI Outbound Interceptor:** Active regex inspection blocking SSNs, MRNs, phone numbers, emails, DOB patterns, and patient identifiers from outbound data.
-* **Tamper-Evident HMAC-SHA256 Audit Trail:** Chained, cryptographically signed logs for every evaluation and state transition. Requires `AUDIT_SECRET_KEY` environment variable (min 16 characters).
-* **Air-Gapped LLM Reasoning Adapter:** Agnostic integration for local Ollama instances (`llama3`, `mistral`), Claude 3.5 Sonnet, GPT-4o, and deterministic test mocks.
-* **Active Learning Bayesian Calibration:** Dynamic tracker updating worker reliability weights and monitoring Brier calibration drift.
-* **FastAPI & Prometheus Telemetry:** Exposes OpenAPI 3.1 REST endpoints and operational Prometheus metrics (`/metrics`).
-
-### Environment Variables
-
-| Variable | Required | Description |
-|:---------|:---------|:------------|
-| `AUDIT_SECRET_KEY` | Yes (for production) | Secret key for HMAC-SHA256 audit trail (min 16 chars) |
-| `MODEL_PROVIDER` | No | LLM provider: `mock`, `ollama`, `claude`, `openai` (default: mock) |
-
----
-
-## 🧪 Testing & Verification
-
-Run the automated test suite:
+Open `http://127.0.0.1:8000/` for the browser interface, `/docs` for generated OpenAPI documentation, or call `POST /api/signal`:
 
 ```bash
-pytest -v
+curl -s http://127.0.0.1:8000/api/signal \
+  -H 'Content-Type: application/json' \
+  -d '{"a":30,"b":70,"c":20,"d":880}'
 ```
 
-Execute high-throughput batch simulation benchmarks:
+The original `audit`, `batch`, `chat` and `verify-audit` CLI commands, and the legacy `/api/audit` interface, are retained for backwards compatibility. **Those generic operational thresholds are not PRR/ROR/IC calculations and must not be treated as pharmacovigilance signal decisions.** The deterministic chat adapter does not perform clinical reasoning or call an external model.
 
-```bash
-python simulator.py 100
-```
+## Security, privacy and deployment
 
-Run the security audit via CI:
+- The browser tool runs entirely locally; no data leaves the page. Avoid importing identifiable patient-level records into a shared device.
+- The Python server stores legacy task data and audit events in process memory. The audit trail is not durable across restarts and is not a substitute for controlled, persistent compliance logging.
+- Set a strong `AUDIT_SECRET_KEY` for any server deployment. The command-line demo generates a random process-local key if absent, but a production environment must configure its own key.
+- `GET /api/audit/logs` is denied unless `AUDIT_VIEW_TOKEN` is configured and supplied using an `Authorization: Bearer <token>` header. Use TLS and application-level access controls before exposing the API to a network.
+- The identifier regex checks are incomplete and **do not establish HIPAA Safe Harbor de-identification**. Do not submit protected health information.
+- Docker: `docker build -t faers-signal .`, then `docker run --rm -p 8000:8000 -e AUDIT_SECRET_KEY="$AUDIT_SECRET_KEY" faers-signal`. Docker Compose requires `AUDIT_SECRET_KEY` and will refuse an unset value.
+- CI installs the package and runs Python 3.10–3.12 tests, Python compilation, JavaScript syntax validation and Node browser-logic smoke tests.
 
-```bash
-python -c "from agents.base import AuditLogger; assert AuditLogger.verify_integrity(); print('Security Audit Passed!')"
-```
+### Methods and caveats
 
----
+See the [FDA data-mining overview](https://www.fda.gov/science-research/data-mining/data-mining-fda-white-paper) for disproportionality methodology and caveats, and [WHO pharmacovigilance guidance](https://www.who.int/docs/default-source/documents/publications/gmp/a-practical-handbook-on-the-pharmacovigilance-of-antimalarial-medicines.pdf) for the distinction between PRR and Bayesian BCPNN. Neither source endorses this software.
 
-## 🐳 Container Deployment
+## Technology and license
 
-```bash
-docker build -t fda-faers-signal-disproportionality .
-docker run -p 8000:8000 -e AUDIT_SECRET_KEY=your-secure-key-here fda-faers-signal-disproportionality
-```
-
-Or using Docker Compose:
-
-```bash
-AUDIT_SECRET_KEY=your-secure-key-here docker-compose up
-```
-
----
-
-## 📁 Project Structure
-
-```
-fda-faers-signal-disproportionality/
-├── agents/                  # Enterprise agent architecture
-│   ├── api.py              # FastAPI REST server
-│   ├── base.py             # Security, PHI guard, HMAC audit trail
-│   ├── models.py           # Pydantic data models
-│   ├── supervisor.py       # Master orchestrator
-│   ├── workers.py          # Specialized evaluation workers
-│   ├── llm_factory.py      # LLM client factory
-│   ├── metrics.py          # Prometheus metrics collector
-│   ├── learning.py         # Bayesian calibration engine
-│   └── streamer.py         # WebSocket telemetry broadcaster
-├── faers_sentinel/         # Frontier disproportionality engine
-│   ├── models.py           # Data models
-│   ├── engine.py           # Core algorithmic engine
-│   ├── agents.py           # Coordinator and sub-agents
-│   ├── cli.py              # Frontier CLI
-│   └── server.py           # Frontier FastAPI server
-├── tests/                  # Test suite
-├── web/index.html          # Operations console UI
-├── cli.py                  # Main CLI entry point
-├── enrichment.py           # Feature enrichment engines
-├── simulator.py            # High-throughput simulation
-├── pyproject.toml          # Project configuration
-├── Dockerfile              # Container build
-└── docker-compose.yml      # Container orchestration
-```
+Python standard-library statistics, optional Pydantic/FastAPI/Uvicorn server, plain JavaScript/HTML/CSS browser UI, pytest and GitHub Actions. Current Chromium, Firefox and Safari browsers are the intended targets; the interface does not require WebAssembly/Pyodide. MIT license; see [LICENSE](LICENSE).

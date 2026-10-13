@@ -1,5 +1,5 @@
 """
-Command-Line Interface for FAERS-Sentinel: PRR, ROR & Bayesian Information Component (IC) Agent.
+Command-Line Interface for FAERS-Sentinel legacy operational telemetry.
 """
 import argparse
 import csv
@@ -12,7 +12,7 @@ coordinator = FAERSSentinelCoordinator()
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(prog="fda-faers-signal-disproportionality", description="FAERS-Sentinel: PRR, ROR & Bayesian Information Component (IC) Agent")
+    parser = argparse.ArgumentParser(prog="fda-faers-signal-disproportionality", description="FAERS-Sentinel legacy operational telemetry")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # Audit
@@ -33,12 +33,27 @@ def main(argv=None):
     p_batch.add_argument("-i", "--input", required=True)
     p_batch.add_argument("-o", "--output", default="results.csv")
 
+    p_signal = subparsers.add_parser("signal", help="Compute FAERS-style 2x2 PRR, ROR, and crude IC")
+    for cell in ("a", "b", "c", "d"):
+        p_signal.add_argument("--" + cell, type=int, required=True)
+    p_signal.add_argument("--continuity-correction", action="store_true",
+                          help="Apply 0.5 correction to all cells when any cell is zero")
+
     # Serve
     p_serve = subparsers.add_parser("serve", help="Launch FastAPI REST server")
     p_serve.add_argument("--host", default="127.0.0.1")
     p_serve.add_argument("--port", type=int, default=8000)
 
     args = parser.parse_args(argv)
+
+    if args.command == "signal":
+        from faers_sentinel.disproportionality import calculate_signal
+        try:
+            outcome = calculate_signal(args.a, args.b, args.c, args.d, args.continuity_correction)
+        except ValueError as exc:
+            parser.error(str(exc))
+        print(json.dumps(outcome, indent=2, allow_nan=False))
+        return 0
 
     if args.command == "audit":
         payload = FrontierPayload(
@@ -52,7 +67,7 @@ def main(argv=None):
         dossier = coordinator.process(payload)
         print("=" * 80)
         print(f"  FAERS-SENTINEL: PRR, ROR & BAYESIAN INFORMATION COMPONENT (IC) AGENT")
-        print(f"  Domain: Pharmacovigilance | Standard: WHO-UMC & FDA FAERS Signal Detection")
+        print(f"  Domain: Pharmacovigilance | Standard: Legacy generic telemetry (not FAERS signal analysis)")
         print(f"  Task: {dossier['task_id']} | Status: [{dossier['overall_status']}] | Total Alerts: {dossier['total_alerts']}")
         print("=" * 80)
         for a in dossier["alerts"]:
@@ -106,7 +121,7 @@ def main(argv=None):
             from .server import create_app
             app = create_app()
             if app:
-                print(f"Starting FAERS-Sentinel: PRR, ROR & Bayesian Information Component (IC) Agent on http://{args.host}:{args.port}")
+                print(f"Starting FAERS-Sentinel legacy operational telemetry on http://{args.host}:{args.port}")
                 uvicorn.run(app, host=args.host, port=args.port)
         except ImportError:
             print("FastAPI / uvicorn not installed. Run 'pip install fastapi uvicorn'")

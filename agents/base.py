@@ -16,7 +16,7 @@ PHI_PATTERNS = [
     re.compile(r"\b(?:MRN|mrn)[:#\s-]*\d{4,10}\b", re.IGNORECASE),
     re.compile(r"\b\d{3}-\d{2}-\d{4}\b"),
     re.compile(r"\b(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b"),
-    re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"),
+    re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"),
     re.compile(r"\b(?:DOB|Date of Birth)[:\s]*\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b", re.IGNORECASE),
     re.compile(r"\b(?:Patient\s+Name|Patient)[:\s]+[A-Z][a-z]+\s+[A-Z][a-z]+\b", re.IGNORECASE),
     re.compile(r"\b(?:John\s+Doe|Jane\s+Smith|Alice\s+Johnson)\b", re.IGNORECASE),
@@ -24,7 +24,7 @@ PHI_PATTERNS = [
 
 
 class SecurityException(Exception):
-    """Raised when outbound data violates HIPAA Safe Harbor or contains raw PHI."""
+    """Raised when outbound data violates identifier-pattern checks; these are not comprehensive de-identification."""
     pass
 
 
@@ -38,7 +38,7 @@ def assert_no_phi(text: str) -> None:
         return
     for pattern in PHI_PATTERNS:
         if pattern.search(str(text)):
-            raise SecurityException(f"PHI Outbound Guard Violation: Sensitive identifier detected with pattern {pattern.pattern}")
+            raise SecurityException(f"Potential identifier detected with pattern {pattern.pattern}")
 
 
 class PHIGuard:
@@ -91,14 +91,24 @@ class AuditTrail:
         return entry
 
     def verify_integrity(self) -> bool:
-        for i, entry in enumerate(self.logs):
-            prev = self.logs[i-1]["current_hash"] if i > 0 else "GENESIS_BLOCK_0000000000000000"
-            if entry["prev_hash"] != prev:
+        prev = "GENESIS_BLOCK_0000000000000000"
+        for entry in self.logs:
+            try:
+                if not hmac.compare_digest(entry["prev_hash"], prev):
+                    return False
+                signed = "|".join(str(entry[k]) for k in (
+                    "audit_id", "timestamp", "actor", "actor_tier",
+                    "event_type", "payload_hash", "prev_hash"))
+                expected = hmac.new(self.secret_key, signed.encode("utf-8"), hashlib.sha256).hexdigest()
+                if not hmac.compare_digest(str(entry["current_hash"]), expected):
+                    return False
+                prev = expected
+            except (KeyError, TypeError, ValueError):
                 return False
         return True
 
     def get_trail(self) -> List[Dict[str, Any]]:
-        return self.logs
+        return [dict(entry) for entry in self.logs]
 
 
 try:

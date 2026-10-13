@@ -2,9 +2,11 @@
 import os
 import sys
 
-# Ensure AUDIT_SECRET_KEY is set
+# Use a fresh process-local key for CLI demos if no configured key is present.
+# Deployed services must supply AUDIT_SECRET_KEY explicitly.
 if not os.getenv("AUDIT_SECRET_KEY"):
-    os.environ["AUDIT_SECRET_KEY"] = "faers-sentinel-dev-key-change-in-production-2026"
+    import secrets
+    os.environ["AUDIT_SECRET_KEY"] = secrets.token_hex(32)
 
 from faers_sentinel.cli import main
 

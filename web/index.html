@@ -1,236 +1,224 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fda Faers Signal Disproportionality — Operations Console</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #090d16;
-            --card: #111827;
-            --border: #1f293d;
-            --accent: #3b82f6;
-            --accent-glow: rgba(59, 130, 246, 0.25);
-            --text: #f3f4f6;
-            --text-muted: #9ca3af;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --success: #10b981;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            padding: 2rem;
-            min-height: 100vh;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        .header-title h1 { font-size: 1.6rem; font-weight: 700; color: #fff; }
-        .header-title p { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem; }
-        .badge {
-            display: inline-block;
-            padding: 0.3rem 0.8rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            background: var(--accent-glow);
-            color: var(--accent);
-            border: 1px solid var(--accent);
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1.2fr;
-            gap: 1.5rem;
-        }
-        .card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
-        .card h2 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem; }
-        input, select, textarea {
-            width: 100%;
-            padding: 0.65rem 0.9rem;
-            background: #0d1322;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            color: #fff;
-            font-family: inherit;
-            font-size: 0.9rem;
-        }
-        input:focus, textarea:focus { outline: none; border-color: var(--accent); }
-        .btn {
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            padding: 0.7rem 1.4rem;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            width: 100%;
-        }
-        .btn:hover { background: #2563eb; }
-        .terminal {
-            background: #060911;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            color: #10b981;
-            height: 380px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-        }
-        .metrics-bar {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        .metric-box {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            text-align: center;
-        }
-        .metric-val { font-size: 1.4rem; font-weight: 700; color: #fff; margin-top: 0.25rem; }
-        .metric-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Local, exploratory reporting disproportionality analysis for a 2 by 2 adverse-event contingency table.">
+<title>FAERS Signal Lab · PRR and ROR</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--surface:#111d30;--edge:#2a3c53;--text:#ecf3fa;--muted:#aabbd0;--accent:#64d2ba;--warning:#ffcd73}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top right,#17304b 0,transparent 45%),var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{width:min(1150px,calc(100% - 32px));margin:auto;padding:30px 0 50px}
+header{border-bottom:1px solid var(--edge);padding:0 0 24px;margin-bottom:24px}
+.eyebrow{font-weight:750;text-transform:uppercase;letter-spacing:.14em;color:var(--accent);font-size:.75rem}
+h1{font-size:clamp(1.8rem,4vw,2.9rem);line-height:1.15;margin:8px 0 8px;letter-spacing:-.035em}
+h2{margin:0 0 12px;font-size:1.17rem}
+p{margin:0 0 12px}
+.sub{max-width:760px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:minmax(0,430px) minmax(0,1fr);gap:18px}
+.panel{border:1px solid var(--edge);border-radius:14px;padding:22px;background:var(--surface)}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:18px 0}
+label{display:block;font-weight:650;font-size:.91rem}
+label small{display:block;color:var(--muted);font-size:.77rem;font-weight:400}
+input[type=number]{display:block;width:100%;margin-top:6px;padding:10px 11px;border:1px solid #53677d;background:#0a1525;color:var(--text);border-radius:8px;font:inherit}
+input:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.checkbox{display:flex;gap:10px;align-items:flex-start;line-height:1.4;font-weight:400}
+input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);flex-shrink:0}
+button{border:1px solid transparent;border-radius:9px;padding:10px 15px;font-weight:750;font:inherit;cursor:pointer;background:var(--accent);color:#07221d}
+button.secondary{border-color:#60778b;color:var(--text);background:transparent}
+.actions{display:flex;flex-wrap:wrap;gap:9px;margin:18px 0 0}
+.note{font-size:.84rem;color:var(--muted);margin-top:12px}
+.error{min-height:1.4em;color:#ff9797;font-weight:650}
+.results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0}
+.stat{padding:14px;border:1px solid var(--edge);border-radius:10px;background:#0d192a}
+.stat .label{font-size:.78rem;color:var(--muted)}
+.stat strong{display:block;font-size:1.55rem;font-variant-numeric:tabular-nums;margin:4px 0}
+.stat small{font-size:.78rem;color:var(--muted)}
+.tag{display:inline-block;background:#22394a;color:var(--accent);padding:4px 9px;border-radius:6px;font-weight:700}
+.tag.signal{color:#251502;background:var(--warning)}
+.explanation{background:#0a1525;border-left:3px solid var(--accent);padding:12px;color:var(--muted);font-size:.86rem;margin-top:16px}
+.full{margin-top:18px}
+table{width:100%;border-collapse:collapse;font-size:.87rem}
+th,td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--edge)}
+td.num{font-variant-numeric:tabular-nums;text-align:right}
+.scroller{overflow:auto;max-height:350px}
+input[type=file]{display:block;margin:12px 0;color:var(--text);max-width:100%}
+footer{color:var(--muted);font-size:.8rem;padding-top:20px}
+a{color:var(--accent)}
+@media(max-width:780px){.grid{grid-template-columns:1fr}.panel{padding:17px}main{width:min(100% - 22px,1150px);padding-top:20px}}
+@media(max-width:420px){.fields{gap:8px}.results{gap:8px}.stat strong{font-size:1.23rem}}
+</style>
 </head>
 <body>
-
-    <div class="header">
-        <div class="header-title">
-            <h1>Fda Faers Signal Disproportionality</h1>
-            <p>Domain: Clinical & Cryptographic AI | Standard: CAP / CLSI / NIST Standards | LabMind-Atlas Architecture</p>
-        </div>
-        <div>
-            <span class="badge">Air-Gapped Active</span>
-            <span class="badge" style="background: rgba(16,185,129,0.2); color: #10b981; border-color: #10b981;">Zero-PHI Guard Active</span>
-        </div>
-    </div>
-
-    <div class="metrics-bar">
-        <div class="metric-box">
-            <div class="metric-label">System Status</div>
-            <div class="metric-val" style="color: var(--success);" id="m-status">OPTIMAL</div>
-        </div>
-        <div class="metric-box">
-            <div class="metric-label">Tasks Processed</div>
-            <div class="metric-val" id="m-tasks">142</div>
-        </div>
-        <div class="metric-box">
-            <div class="metric-label">Audit Blocks Signed</div>
-            <div class="metric-val" id="m-audit">142</div>
-        </div>
-        <div class="metric-box">
-            <div class="metric-label">PHI Interceptions</div>
-            <div class="metric-val" style="color: var(--accent);" id="m-phi">0</div>
-        </div>
-    </div>
-
-    <div class="grid">
-        <div class="card">
-            <h2>⚙️ Dispatch Distributed Component Audit</h2>
-            <div class="form-group">
-                <label>Task / Sample ID</label>
-                <input type="text" id="task_id" value="TASK-2026-LIVE-01">
-            </div>
-            <div class="form-group">
-                <label>Target Identifier</label>
-                <input type="text" id="target_id" value="SPECIMEN-ALPHA-77">
-            </div>
-            <div class="form-group">
-                <label>Primary Measurement / Value</label>
-                <input type="number" id="primary_metric" value="29.4" step="0.1">
-            </div>
-            <div class="form-group">
-                <label>Secondary Metric / Kinetic Index</label>
-                <input type="number" id="secondary_metric" value="14.8" step="0.1">
-            </div>
-            <div class="form-group">
-                <label>Status / Phenotype Descriptor</label>
-                <input type="text" id="status_descriptor" value="DISCORDANT_ANOMALY">
-            </div>
-            <div class="form-group">
-                <label><input type="checkbox" id="is_critical" checked> Trigger Emergency / Critical Flag</label>
-            </div>
-            <button class="btn" onclick="runAudit()">Execute Distributed Component Audit</button>
-        </div>
-
-        <div class="card">
-            <h2>📊 Real-Time Consensus Dossier & Audit Log</h2>
-            <div class="terminal" id="outputConsole">// Fda Faers Signal Disproportionality Operations Console Ready
-// Connection established with Air-Gapped Supervisor
-// Cryptographic HMAC-SHA256 audit ledger loaded.
-// Ready for live task payload dispatch...</div>
-        </div>
-    </div>
-
-    <script>
-        async function runAudit() {
-            const consoleEl = document.getElementById('outputConsole');
-            consoleEl.innerText = "// Dispatching task across specialized workers...
-// Invoking InvariantQCWorker, SafetyEscalationWorker, ProtocolWorker...";
-
-            const payload = {
-                task_id: document.getElementById('task_id').value,
-                target_identifier: document.getElementById('target_id').value,
-                primary_metric: parseFloat(document.getElementById('primary_metric').value),
-                secondary_metric: parseFloat(document.getElementById('secondary_metric').value),
-                status_descriptor: document.getElementById('status_descriptor').value,
-                is_critical_flag: document.getElementById('is_critical').checked
-            };
-
-            try {
-                const res = await fetch('/api/audit', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-                consoleEl.innerText = JSON.stringify(data, null, 2);
-                document.getElementById('m-tasks').innerText = parseInt(document.getElementById('m-tasks').innerText) + 1;
-                document.getElementById('m-audit').innerText = parseInt(document.getElementById('m-audit').innerText) + 1;
-            } catch (err) {
-                consoleEl.innerText = "// Offline / Simulation Output:\n" + JSON.stringify({
-                    dossier_id: "DOSSIER-SIM-" + Math.floor(Math.random()*10000),
-                    system: "fda-faers-signal-disproportionality",
-                    domain: "Clinical & Cryptographic AI",
-                    task_id: payload.task_id,
-                    overall_urgency: payload.is_critical_flag ? "CRITICAL_STAT_PANIC" : "ELEVATED_RISK",
-                    integrity_status: "DISCORDANT_ANOMALY",
-                    alerts: [
-                        { worker: "InvariantQCWorker", alert: "Primary metric exceeds upper reference bound" },
-                        { worker: "SafetyEscalationWorker", alert: "Critical emergency interlock flag active" }
-                    ],
-                    audit_hash: "HMAC_SHA256_e83f9a72b941d6c381f9"
-                }, null, 2);
-            }
+<main>
+<header>
+<div class="eyebrow">Pharmacovigilance · local analysis</div>
+<h1>FAERS Signal Lab</h1>
+<p class="sub">Calculate proportional reporting ratio (PRR), reporting odds ratio (ROR), Yates-corrected chi-square and a descriptive observed/expected information component from an exclusive 2 × 2 reporting table.</p>
+</header>
+<div class="grid">
+<section class="panel" aria-labelledby="inputs-heading">
+<h2 id="inputs-heading">Reporting counts</h2>
+<p class="sub">Use deduplicated cases from one consistent reporting population. Each case should occupy exactly one cell.</p>
+<form id="signal-form">
+<div class="fields">
+<label for="a">a · Drug + event <small>Both reported</small><input id="a" type="number" min="0" max="1000000" step="1" value="30" required></label>
+<label for="b">b · Drug + other event <small>Drug, not target event</small><input id="b" type="number" min="0" max="1000000" step="1" value="70" required></label>
+<label for="c">c · Other drug + event <small>Event, not target drug</small><input id="c" type="number" min="0" max="1000000" step="1" value="20" required></label>
+<label for="d">d · Other drug + other event <small>Neither</small><input id="d" type="number" min="0" max="1000000" step="1" value="880" required></label>
+</div>
+<label class="checkbox" for="correction"><input id="correction" type="checkbox">Apply a 0.5 continuity correction to all four cells when any cell is zero (ratios and CIs only)</label>
+<div class="actions"><button type="submit">Calculate signal</button><button class="secondary" type="button" id="reset">Reset example</button></div>
+</form>
+<p class="error" id="error" role="alert" aria-live="assertive"></p>
+<p class="note">No raw FAERS downloads or automatic drug-event mapping are performed. The count denominator depends on the extraction and case-level methodology.</p>
+</section>
+<section class="panel" aria-labelledby="results-heading">
+<h2 id="results-heading">Disproportionality analysis</h2>
+<div id="flag" class="tag" role="status" aria-live="polite">Not calculated</div>
+<div class="results" aria-live="polite">
+<div class="stat"><span class="label">PRR</span><strong id="prr">—</strong><small id="prr-ci">95% CI: —</small></div>
+<div class="stat"><span class="label">ROR</span><strong id="ror">—</strong><small id="ror-ci">95% CI: —</small></div>
+<div class="stat"><span class="label">Yates χ² (1 df)</span><strong id="chi">—</strong><small>Based on unadjusted observed counts</small></div>
+<div class="stat"><span class="label">Crude IC · log₂(O/E)</span><strong id="ic">—</strong><small>Not Bayesian BCPNN IC</small></div>
+</div>
+<p id="detail" class="note">Enter counts and calculate to view results.</p>
+<div class="explanation"><strong>Interpretation:</strong> The exploratory Evans-type flag requires at least 3 co-reports, PRR ≥ 2 and Yates χ² ≥ 4. These are screening conventions, not validated diagnostic cutoffs or evidence of causation. Reporting bias, confounding and duplicate reports can distort all measures.</div>
+</section>
+</div>
+<section class="panel full" aria-labelledby="batch-heading">
+<h2 id="batch-heading">Batch CSV analysis</h2>
+<p class="sub">Choose a CSV file containing <code>a,b,c,d</code> columns, optionally <code>drug,event</code>. Processing takes place only in your browser; no file is uploaded.</p>
+<input id="csv-file" type="file" accept=".csv,text/csv" aria-label="Select CSV containing a, b, c, d columns">
+<div class="actions"><button id="sample" type="button" class="secondary">Download sample CSV</button><button id="download" type="button" class="secondary" disabled>Export analyzed CSV</button></div>
+<p id="batch-status" class="note" role="status" aria-live="polite">No batch loaded.</p>
+<div class="scroller"><table><thead><tr><th>Drug</th><th>Event</th><th class="num">a</th><th class="num">PRR</th><th class="num">ROR</th><th>Flag</th></tr></thead><tbody id="batch-body"><tr><td colspan="6">No results.</td></tr></tbody></table></div>
+</section>
+<footer>Exploratory research utility · The application has no backend, telemetry or network requests. Values are not incidence rates or evidence that a drug caused an event.</footer>
+</main>
+<script>
+"use strict";
+(function () {
+  const byId = id => document.getElementById(id);
+  const initial = [30, 70, 20, 880];
+  let exported = [];
+  function fmt(n) { return n === null || !Number.isFinite(n) ? "Undefined" : Number(n).toFixed(3); }
+  function readCount(value, field) {
+    if (String(value).trim() === "") throw Error("Missing count: " + field);
+    const n = Number(value);
+    if (!Number.isSafeInteger(n) || n < 0 || n > 1000000)
+      throw Error("Count " + field + " must be an integer from 0 to 1,000,000.");
+    return n;
+  }
+  function compute(a,b,c,d,correction) {
+    const n = a+b+c+d;
+    if (n === 0) throw Error("At least one report is required.");
+    const denom = (a+b)*(c+d)*(a+c)*(b+d);
+    const chi = denom > 0 ? n*Math.pow(Math.max(0,Math.abs(a*d-b*c)-n/2),2)/denom : null;
+    const expected = (a+b)*(a+c)/n;
+    const ic = a > 0 && expected > 0 ? Math.log2(a/expected) : null;
+    const applied = correction && [a,b,c,d].includes(0);
+    const cells = [a,b,c,d].map(v => v+(applied ? .5 : 0));
+    const aa=cells[0],bb=cells[1],cc=cells[2],dd=cells[3];
+    let prr=null, ror=null, prrCI=null, rorCI=null;
+    if(aa+bb>0 && cc+dd>0 && cc>0)prr=(aa/(aa+bb))/(cc/(cc+dd));
+    if(bb>0 && cc>0)ror=aa*dd/(bb*cc);
+    if (cells.every(v=>v>0)) {
+      const pSE=Math.sqrt(1/aa-1/(aa+bb)+1/cc-1/(cc+dd));
+      const rSE=Math.sqrt(1/aa+1/bb+1/cc+1/dd);
+      prrCI=[Math.exp(Math.log(prr)-1.96*pSE),Math.exp(Math.log(prr)+1.96*pSE)];
+      rorCI=[Math.exp(Math.log(ror)-1.96*rSE),Math.exp(Math.log(ror)+1.96*rSE)];
+    }
+    return {prr,ror,prrCI,rorCI,chi,ic,expected,applied,
+      flag:a>=3 && [a,b,c,d].every(v=>v>0) && prr!==null && prr>=2 && chi!==null && chi>=4};
+  }
+  function calculateForm() {
+    try {
+      const counts = ["a","b","c","d"].map(id=>readCount(byId(id).value,id));
+      const r = compute(...counts,byId("correction").checked);
+      byId("prr").textContent=fmt(r.prr);
+      byId("ror").textContent=fmt(r.ror);
+      byId("chi").textContent=fmt(r.chi);
+      byId("ic").textContent=fmt(r.ic);
+      byId("prr-ci").textContent="95% CI: "+(r.prrCI?r.prrCI.map(fmt).join(" – "):"Undefined");
+      byId("ror-ci").textContent="95% CI: "+(r.rorCI?r.rorCI.map(fmt).join(" – "):"Undefined");
+      byId("flag").textContent=r.flag?"Meets exploratory screening rule":"Screening rule not met";
+      byId("flag").className="tag"+(r.flag?" signal":"");
+      byId("detail").textContent="Expected co-reports under independence: "+fmt(r.expected)+". "+(r.applied?"Continuity correction applied to the ratios and intervals. ":"")+(r.prr===null?"Some estimates are undefined for these zero-cell counts. ":"");
+      byId("error").textContent="";
+    } catch(err) { byId("error").textContent=err.message; }
+  }
+  byId("signal-form").addEventListener("submit",function(e){e.preventDefault();calculateForm();});
+  byId("reset").addEventListener("click",function(){["a","b","c","d"].forEach((id,i)=>byId(id).value=initial[i]);byId("correction").checked=false;calculateForm();});
+  function parseCSV(text) {
+    const rows=[];let row=[],cell="",quoted=false;
+    text=text.replace(/^\uFEFF/,"");
+    for(let i=0;i<text.length;i++){
+      const ch=text[i];
+      if(quoted){
+        if(ch==='"' && text[i+1]==='"'){cell+='"';i++;}
+        else if(ch==='"'){quoted=false;}
+        else cell+=ch;
+      }else if(ch==='"'){if(cell!=="") throw Error("Invalid CSV quotation.");quoted=true;}
+      else if(ch===","){row.push(cell);cell="";}
+      else if(ch==="\n"||ch==="\r"){if(ch==="\r"&&text[i+1]==="\n")i++;row.push(cell);if(row.some(v=>v.trim()!==""))rows.push(row);row=[];cell="";}
+      else cell+=ch;
+    }
+    if(quoted)throw Error("Unclosed CSV quotation.");
+    row.push(cell);if(row.some(v=>v.trim()!==""))rows.push(row);
+    return rows;
+  }
+  function csvEscape(value) {
+    let s=String(value===null?"":value);
+    if(typeof value==="number" || typeof value==="boolean")return s;
+    if(/^[\s]*[=+\-@]/.test(s))s="'"+s;
+    return '"'+s.replace(/"/g,'""')+'"';
+  }
+  function saveCSV(name, rows){
+    const blob=new Blob([rows.map(row=>row.map(csvEscape).join(",")).join("\r\n")+"\r\n"],{type:"text/csv;charset=utf-8"});
+    const url=URL.createObjectURL(blob),link=document.createElement("a");
+    link.href=url;link.download=name;document.body.appendChild(link);link.click();link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  byId("sample").addEventListener("click",()=>saveCSV("faers-sample.csv",[
+    ["drug","event","a","b","c","d"],["ExampleDrug","ExampleEvent","30","70","20","880"],["Comparator","OtherEvent","10","90","20","180"]
+  ]));
+  byId("csv-file").addEventListener("change",async function(){
+    exported=[];byId("download").disabled=true;byId("batch-body").replaceChildren();
+    const file=this.files&&this.files[0];if(!file)return;
+    if(file.size>5*1024*1024){byId("batch-status").textContent="File exceeds 5 MB limit.";return;}
+    try{
+      const rows=parseCSV(await file.text());
+      if(rows.length<2||rows.length>10001)throw Error("Supply 1–10,000 data rows.");
+      const headers=rows.shift().map(x=>x.trim().toLowerCase());
+      const indexes=["a","b","c","d"].map(h=>headers.indexOf(h));
+      if(indexes.some(i=>i<0))throw Error("CSV must contain a, b, c, d headers.");
+      const drugIdx=headers.indexOf("drug"),eventIdx=headers.indexOf("event");
+      const resultRows=[];
+      const header=["drug","event","a","b","c","d","prr","prr_ci95_low","prr_ci95_high","ror","ror_ci95_low","ror_ci95_high","chi_square_yates","ic_crude","screening_flag"];
+      resultRows.push(header);
+      const body=byId("batch-body");
+      for(let i=0;i<rows.length;i++){
+        const line=rows[i], [a,b,c,d]=indexes.map((idx,j)=>readCount(line[idx],["a","b","c","d"][j]));
+        const r=compute(a,b,c,d,byId("correction").checked);
+        const drug=drugIdx<0?"":(line[drugIdx]||"");
+        const event=eventIdx<0?"":(line[eventIdx]||"");
+        resultRows.push([drug,event,a,b,c,d,r.prr,r.prrCI&&r.prrCI[0],r.prrCI&&r.prrCI[1],r.ror,r.rorCI&&r.rorCI[0],r.rorCI&&r.rorCI[1],r.chi,r.ic,r.flag]);
+        if(i<200){
+          const tr=document.createElement("tr");
+          [drug,event,a,fmt(r.prr),fmt(r.ror),r.flag?"Flagged":"No"].forEach((item,j)=>{
+            const td=document.createElement("td");td.textContent=String(item);if(j===2||j===3||j===4)td.className="num";tr.appendChild(td);
+          });body.appendChild(tr);
         }
-    </script>
+      }
+      exported=resultRows;byId("download").disabled=false;
+      byId("batch-status").textContent=rows.length+" records analyzed locally; preview shows up to 200. Export contains all rows.";
+    }catch(err){byId("batch-status").textContent="Batch error: "+err.message;byId("batch-body").replaceChildren();}
+  });
+  byId("download").addEventListener("click",function(){if(exported.length)saveCSV("faers-signals.csv",exported);});
+  calculateForm();
+})();
+</script>
 </body>
 </html>

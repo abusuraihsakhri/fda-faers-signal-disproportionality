@@ -1,5 +1,5 @@
 """
-Distributed Component Coordination & Executive Hierarchy for FAERS-Sentinel: PRR, ROR & Bayesian Information Component (IC) Agent.
+Distributed Component Coordination & Executive Hierarchy for FAERS-Sentinel legacy operational telemetry.
 Domain: Pharmacovigilance
 """
 import uuid
@@ -93,7 +93,7 @@ class FAERSSentinelCoordinator:
             "critical_count": crit_count,
             "warning_count": warn_count,
             "alerts": [a.to_dict() for a in all_alerts],
-            "standard_specification": "WHO-UMC & FDA FAERS Signal Detection",
+            "standard_specification": "Legacy generic telemetry (not FAERS signal analysis)",
             "consensus_summary": f"Consensus evaluation completed across 3 sub-agents with status [{status.value}].",
         }
 
@@ -103,8 +103,8 @@ class FAERSSentinelCoordinator:
     def query_supervisory_chat(self, query: str) -> str:
         q = query.strip().lower()
         if "status" in q or "ledger" in q:
-            return f"FAERS-Sentinel: PRR, ROR & Bayesian Information Component (IC) Agent currently managing {len(self.execution_ledger)} execution tasks in air-gapped memory."
+            return f"FAERS-Sentinel legacy operational telemetry currently managing {len(self.execution_ledger)} execution tasks in air-gapped memory."
         elif "standard" in q or "spec" in q:
-            return "Active runtime operating strictly according to WHO-UMC & FDA FAERS Signal Detection specifications."
+            return "Active runtime operating strictly according to legacy operational telemetry rules (not FAERS disproportionality)."
         else:
-            return f"FAERS-Sentinel: PRR, ROR & Bayesian Information Component (IC) Agent executive coordinator online. Zero-telemetry on-premises surveillance active."
+            return f"FAERS-Sentinel legacy operational telemetry executive coordinator online. Zero-telemetry on-premises surveillance active."

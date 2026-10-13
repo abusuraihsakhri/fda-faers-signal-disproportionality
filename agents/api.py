@@ -1,11 +1,15 @@
 """
 FastAPI REST API Server for Fda Faers Signal Disproportionality.
 """
+import os
+import hmac
+from pathlib import Path
 from typing import Dict, Any, List
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from fastapi.responses import JSONResponse, FileResponse
+from pydantic import BaseModel, Field
 from .base import AuditLogger, PHIGuard, SecurityException
+from faers_sentinel.disproportionality import calculate_signal
 from .models import SystemTaskPayload, ConsensusDossier
 from .supervisor import SystemSupervisor
 
@@ -13,7 +17,7 @@ supervisor = SystemSupervisor(model_provider="mock")
 
 app = FastAPI(
     title="Fda Faers Signal Disproportionality API",
-    description="Enterprise Distributed Component Platform (Post-Quantum Cryptography & Hardware Security)",
+    description="Enterprise Distributed Component Platform (Pharmacovigilance (legacy operational telemetry))",
     version="3.0.0-ENTERPRISE",
 )
 
@@ -28,6 +32,11 @@ async def security_exception_handler(request: Request, exc: SecurityException):
         status_code=400,
         content={"error": "Security violation", "detail": str(exc)},
     )
+
+
+@app.get("/", include_in_schema=False)
+def browser_application():
+    return FileResponse(Path(__file__).resolve().parents[1] / "web" / "index.html")
 
 
 @app.get("/health")
@@ -50,6 +59,22 @@ def api_audit(payload: SystemTaskPayload):
     return dossier.to_dict()
 
 
+
+class SignalCounts(BaseModel):
+    a: int = Field(ge=0, le=10**12, strict=True)
+    b: int = Field(ge=0, le=10**12, strict=True)
+    c: int = Field(ge=0, le=10**12, strict=True)
+    d: int = Field(ge=0, le=10**12, strict=True)
+    continuity_correction: bool = False
+
+
+@app.post("/api/signal")
+def api_signal(req: SignalCounts):
+    try:
+        return calculate_signal(req.a, req.b, req.c, req.d, req.continuity_correction)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
 @app.post("/api/chat")
 def api_chat(req: ChatRequest):
     try:
@@ -60,5 +85,10 @@ def api_chat(req: ChatRequest):
 
 
 @app.get("/api/audit/logs")
-def api_audit_logs():
+def api_audit_logs(request: Request):
+    # Never expose case identifiers and signed audit metadata anonymously.
+    key = os.getenv("AUDIT_VIEW_TOKEN", "")
+    supplied = request.headers.get("authorization", "")
+    if not key or not hmac.compare_digest(supplied, "Bearer " + key):
+        raise HTTPException(status_code=403, detail="Audit access is not configured or authorized.")
     return {"audit_trail": AuditLogger.get_trail(), "verified": AuditLogger.verify_integrity()}
