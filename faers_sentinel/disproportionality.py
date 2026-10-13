@@ -18,8 +18,8 @@ def calculate_signal(a: int, b: int, c: int, d: int, continuity_correction: bool
     not the posterior Bayesian BCPNN information component.
     """
     counts = (a, b, c, d)
-    if any(isinstance(x, bool) or not isinstance(x, int) or x < 0 for x in counts):
-        raise ValueError("a, b, c and d must be non-negative integers")
+    if any(isinstance(x, bool) or not isinstance(x, int) or x < 0 or x > 10**12 for x in counts):
+        raise ValueError("a, b, c and d must be integers between 0 and 1,000,000,000,000")
     if not isinstance(continuity_correction, bool):
         raise ValueError("continuity_correction must be boolean")
     total = sum(counts)
