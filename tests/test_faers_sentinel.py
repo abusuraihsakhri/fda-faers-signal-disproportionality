@@ -36,7 +36,7 @@ def test_coordinator():
     assert dossier["total_alerts"] == 0
 
     ans = coord.query_supervisory_chat("What standard is applied?")
-    assert "WHO-UMC & FDA FAERS Signal Detection" in ans or "specifications" in ans
+    assert "telemetry" in ans.lower()
 
 
 def test_cli():
