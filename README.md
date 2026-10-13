@@ -1,5 +1,7 @@
 # FDA FAERS Signal Disproportionality
 
+### [Open the Live Application →](https://abusuraihsakhri.github.io/fda-faers-signal-disproportionality/)
+
 A reproducible, exploratory pharmacovigilance calculator for **2 × 2 drug–event reporting tables**. Enter counts in the browser, analyze CSV batches offline, or use the Python CLI/API. No FAERS database is bundled or queried automatically.
 
 ## What it calculates
@@ -33,7 +35,7 @@ Open [web/index.html](web/index.html) locally in a modern browser. No installati
 
 The browser limits counts to 0–1,000,000 per cell for numeric precision and accepts a maximum 5 MB CSV with 10,000 records. The Python interface accepts counts up to 10¹² per cell.
 
-The GitHub Pages deployment workflow publishes `web/` on updates to `master`, provided GitHub Pages is enabled with **GitHub Actions** as the build/deployment source. A public live-application URL is only published here after independent verification.
+GitHub Pages publishes `web/` through the successful GitHub Actions deployment workflow on changes to `master`.
 
 ## Python installation and CLI
 
