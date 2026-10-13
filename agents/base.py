@@ -24,7 +24,7 @@ PHI_PATTERNS = [
 
 
 class SecurityException(Exception):
-    """Raised when outbound data violates HIPAA Safe Harbor or contains raw PHI."""
+    """Raised when outbound data violates identifier-pattern checks; these are not comprehensive de-identification."""
     pass
 
 
@@ -38,7 +38,7 @@ def assert_no_phi(text: str) -> None:
         return
     for pattern in PHI_PATTERNS:
         if pattern.search(str(text)):
-            raise SecurityException(f"PHI Outbound Guard Violation: Sensitive identifier detected with pattern {pattern.pattern}")
+            raise SecurityException(f"Potential identifier detected with pattern {pattern.pattern}")
 
 
 class PHIGuard:
