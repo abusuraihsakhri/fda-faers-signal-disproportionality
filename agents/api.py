@@ -4,8 +4,9 @@ FastAPI REST API Server for Fda Faers Signal Disproportionality.
 from typing import Dict, Any, List
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from .base import AuditLogger, PHIGuard, SecurityException
+from faers_sentinel.disproportionality import calculate_signal
 from .models import SystemTaskPayload, ConsensusDossier
 from .supervisor import SystemSupervisor
 
@@ -49,6 +50,22 @@ def api_audit(payload: SystemTaskPayload):
     dossier = supervisor.process_task(payload)
     return dossier.to_dict()
 
+
+
+class SignalCounts(BaseModel):
+    a: int = Field(ge=0, strict=True)
+    b: int = Field(ge=0, strict=True)
+    c: int = Field(ge=0, strict=True)
+    d: int = Field(ge=0, strict=True)
+    continuity_correction: bool = False
+
+
+@app.post("/api/signal")
+def api_signal(req: SignalCounts):
+    try:
+        return calculate_signal(req.a, req.b, req.c, req.d, req.continuity_correction)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 @app.post("/api/chat")
 def api_chat(req: ChatRequest):
