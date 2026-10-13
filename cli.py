@@ -7,9 +7,11 @@ import json
 import os
 import sys
 
-# Ensure AUDIT_SECRET_KEY is set for CLI usage
+# Use a fresh process-local key for CLI demos if no configured key is present.
+# Deployed services must supply AUDIT_SECRET_KEY explicitly.
 if not os.getenv("AUDIT_SECRET_KEY"):
-    os.environ["AUDIT_SECRET_KEY"] = "cli-dev-key-change-in-production-2026"
+    import secrets
+    os.environ["AUDIT_SECRET_KEY"] = secrets.token_hex(32)
 
 from agents.models import SystemTaskPayload
 from agents.supervisor import SystemSupervisor
@@ -43,12 +45,27 @@ def main(argv=None):
     # Verify Audit
     subparsers.add_parser("verify-audit", help="Verify HMAC audit trail integrity")
 
+    p_signal = subparsers.add_parser("signal", help="Compute FAERS-style 2x2 PRR, ROR, and crude IC")
+    for cell in ("a", "b", "c", "d"):
+        p_signal.add_argument("--" + cell, type=int, required=True)
+    p_signal.add_argument("--continuity-correction", action="store_true",
+                          help="Apply 0.5 correction to all cells when any cell is zero")
+
     # Serve
     p_serve = subparsers.add_parser("serve", help="Launch FastAPI REST server")
     p_serve.add_argument("--host", default="127.0.0.1")
     p_serve.add_argument("--port", type=int, default=8000)
 
     args = parser.parse_args(argv)
+
+    if args.command == "signal":
+        from faers_sentinel.disproportionality import calculate_signal
+        try:
+            outcome = calculate_signal(args.a, args.b, args.c, args.d, args.continuity_correction)
+        except ValueError as exc:
+            parser.error(str(exc))
+        print(json.dumps(outcome, indent=2, allow_nan=False))
+        return 0
 
     if args.command == "audit":
         payload = SystemTaskPayload(
