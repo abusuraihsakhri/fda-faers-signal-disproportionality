@@ -14,7 +14,7 @@ supervisor = SystemSupervisor(model_provider="mock")
 
 app = FastAPI(
     title="Fda Faers Signal Disproportionality API",
-    description="Enterprise Distributed Component Platform (Post-Quantum Cryptography & Hardware Security)",
+    description="Enterprise Distributed Component Platform (Pharmacovigilance (legacy operational telemetry))",
     version="3.0.0-ENTERPRISE",
 )
 
