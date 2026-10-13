@@ -1,7 +1,7 @@
 """
-Core Algorithmic Engine & Cryptographic / Biological Logic for FAERS-Sentinel: PRR, ROR & Bayesian Information Component (IC) Agent.
+Core Algorithmic Engine & Cryptographic / Biological Logic for FAERS-Sentinel legacy operational telemetry.
 Domain: Pharmacovigilance
-Standard: WHO-UMC & FDA FAERS Signal Detection
+Standard: Legacy generic telemetry (not FAERS signal analysis)
 """
 import math
 from typing import Dict, Any, List, Optional
