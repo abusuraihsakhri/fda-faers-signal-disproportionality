@@ -43,3 +43,4 @@ jobs:
           Path("/tmp/faers-browser.js").write_text(blocks[0], encoding="utf-8")
           PY
           node --check /tmp/faers-browser.js
+          node tests/browser-smoke.cjs
