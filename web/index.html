@@ -122,9 +122,9 @@ a{color:var(--accent)}
     const cells = [a,b,c,d].map(v => v+(applied ? .5 : 0));
     const aa=cells[0],bb=cells[1],cc=cells[2],dd=cells[3];
     let prr=null, ror=null, prrCI=null, rorCI=null;
+    if(aa+bb>0 && cc+dd>0 && cc>0)prr=(aa/(aa+bb))/(cc/(cc+dd));
+    if(bb>0 && cc>0)ror=aa*dd/(bb*cc);
     if (cells.every(v=>v>0)) {
-      prr=(aa/(aa+bb))/(cc/(cc+dd));
-      ror=aa*dd/(bb*cc);
       const pSE=Math.sqrt(1/aa-1/(aa+bb)+1/cc-1/(cc+dd));
       const rSE=Math.sqrt(1/aa+1/bb+1/cc+1/dd);
       prrCI=[Math.exp(Math.log(prr)-1.96*pSE),Math.exp(Math.log(prr)+1.96*pSE)];
@@ -145,7 +145,7 @@ a{color:var(--accent)}
       byId("ror-ci").textContent="95% CI: "+(r.rorCI?r.rorCI.map(fmt).join(" – "):"Undefined");
       byId("flag").textContent=r.flag?"Meets exploratory screening rule":"Screening rule not met";
       byId("flag").className="tag"+(r.flag?" signal":"");
-      byId("detail").textContent="Expected co-reports under independence: "+fmt(r.expected)+". "+(r.applied?"Continuity correction applied to the ratios and intervals. ":"")+(r.prr===null?"Ratio estimates require positive cells unless correction is selected. ":"");
+      byId("detail").textContent="Expected co-reports under independence: "+fmt(r.expected)+". "+(r.applied?"Continuity correction applied to the ratios and intervals. ":"")+(r.prr===null?"Some estimates are undefined for these zero-cell counts. ":"");
       byId("error").textContent="";
     } catch(err) { byId("error").textContent=err.message; }
   }
@@ -171,6 +171,7 @@ a{color:var(--accent)}
   }
   function csvEscape(value) {
     let s=String(value===null?"":value);
+    if(typeof value==="number" || typeof value==="boolean")return s;
     if(/^[\s]*[=+\-@]/.test(s))s="'"+s;
     return '"'+s.replace(/"/g,'""')+'"';
   }
