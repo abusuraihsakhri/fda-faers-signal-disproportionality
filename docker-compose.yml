@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   fda-faers-signal-disproportionality:
     build: .
@@ -8,7 +6,7 @@ services:
       - "8000:8000"
     environment:
       # IMPORTANT: Change this in production! Use a secrets manager or Docker secrets.
-      - AUDIT_SECRET_KEY=${AUDIT_SECRET_KEY:-change-me-in-production-use-strong-random-key}
+      - AUDIT_SECRET_KEY=${AUDIT_SECRET_KEY:?Set AUDIT_SECRET_KEY before starting Compose}
       - MODEL_PROVIDER=mock
     restart: unless-stopped
     healthcheck:
