@@ -31,7 +31,7 @@ Open [web/index.html](web/index.html) locally in a modern browser. No installati
 3. To process a batch, choose a CSV containing `a,b,c,d` header fields and optional `drug,event`. Use **Download sample CSV** for the format.
 4. Export the analyzed CSV. Input data remains in browser memory and is never sent to this repository or a server by the static application.
 
-The browser limits counts to 0–1,000,000 per cell for numeric precision and accepts a maximum 5 MB CSV with 10,000 records. Use the Python interface for larger integer counts.
+The browser limits counts to 0–1,000,000 per cell for numeric precision and accepts a maximum 5 MB CSV with 10,000 records. The Python interface accepts counts up to 10¹² per cell.
 
 The GitHub Pages deployment workflow publishes `web/` on updates to `master`, provided GitHub Pages is enabled with **GitHub Actions** as the build/deployment source. A public live-application URL is only published here after independent verification.
 
