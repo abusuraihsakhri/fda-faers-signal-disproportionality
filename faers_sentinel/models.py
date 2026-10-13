@@ -1,7 +1,7 @@
 """
-Data Models & Telemetry Definitions for FAERS-Sentinel: PRR, ROR & Bayesian Information Component (IC) Agent.
+Data Models & Telemetry Definitions for FAERS-Sentinel legacy operational telemetry.
 Domain: Pharmacovigilance
-Standard: WHO-UMC & FDA FAERS Signal Detection
+Standard: Legacy generic telemetry (not FAERS signal analysis)
 """
 import datetime
 from dataclasses import dataclass, field
@@ -35,7 +35,7 @@ class AgentTelemetryAlert:
     summary: str
     technical_details: str
     actionable_remediation: str
-    standard_reference: str = "WHO-UMC & FDA FAERS Signal Detection"
+    standard_reference: str = "Legacy generic telemetry (not FAERS signal analysis)"
     timestamp: str = field(default_factory=lambda: datetime.datetime.now(datetime.timezone.utc).isoformat())
 
     def to_dict(self) -> Dict[str, Any]:
