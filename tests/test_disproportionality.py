@@ -27,7 +27,7 @@ def test_independence_and_low_counts():
 
 def test_zeros_are_explicitly_undefined_without_correction():
     result = calculate_signal(3, 0, 1, 100)
-    assert result["prr"] is None
+    assert result["prr"] == pytest.approx(101)
     assert result["ror"] is None
     assert result["ror_ci95"] is None
     assert result["continuity_correction_applied"] is False
