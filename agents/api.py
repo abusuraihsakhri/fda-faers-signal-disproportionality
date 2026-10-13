@@ -1,6 +1,8 @@
 """
 FastAPI REST API Server for Fda Faers Signal Disproportionality.
 """
+import os
+import hmac
 from typing import Dict, Any, List
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
@@ -77,5 +79,10 @@ def api_chat(req: ChatRequest):
 
 
 @app.get("/api/audit/logs")
-def api_audit_logs():
+def api_audit_logs(request: Request):
+    # Never expose case identifiers and signed audit metadata anonymously.
+    key = os.getenv("AUDIT_VIEW_TOKEN", "")
+    supplied = request.headers.get("authorization", "")
+    if not key or not hmac.compare_digest(supplied, "Bearer " + key):
+        raise HTTPException(status_code=403, detail="Audit access is not configured or authorized.")
     return {"audit_trail": AuditLogger.get_trail(), "verified": AuditLogger.verify_integrity()}
