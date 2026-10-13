@@ -105,6 +105,6 @@ class FAERSSentinelCoordinator:
         if "status" in q or "ledger" in q:
             return f"FAERS-Sentinel: PRR, ROR & Bayesian Information Component (IC) Agent currently managing {len(self.execution_ledger)} execution tasks in air-gapped memory."
         elif "standard" in q or "spec" in q:
-            return "Active runtime operating strictly according to WHO-UMC & FDA FAERS Signal Detection specifications."
+            return "Active runtime operating strictly according to legacy operational telemetry rules (not FAERS disproportionality)."
         else:
             return f"FAERS-Sentinel: PRR, ROR & Bayesian Information Component (IC) Agent executive coordinator online. Zero-telemetry on-premises surveillance active."
