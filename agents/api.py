@@ -61,10 +61,10 @@ def api_audit(payload: SystemTaskPayload):
 
 
 class SignalCounts(BaseModel):
-    a: int = Field(ge=0, strict=True)
-    b: int = Field(ge=0, strict=True)
-    c: int = Field(ge=0, strict=True)
-    d: int = Field(ge=0, strict=True)
+    a: int = Field(ge=0, le=10**12, strict=True)
+    b: int = Field(ge=0, le=10**12, strict=True)
+    c: int = Field(ge=0, le=10**12, strict=True)
+    d: int = Field(ge=0, le=10**12, strict=True)
     continuity_correction: bool = False
 
 
