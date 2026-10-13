@@ -33,12 +33,27 @@ def main(argv=None):
     p_batch.add_argument("-i", "--input", required=True)
     p_batch.add_argument("-o", "--output", default="results.csv")
 
+    p_signal = subparsers.add_parser("signal", help="Compute FAERS-style 2x2 PRR, ROR, and crude IC")
+    for cell in ("a", "b", "c", "d"):
+        p_signal.add_argument("--" + cell, type=int, required=True)
+    p_signal.add_argument("--continuity-correction", action="store_true",
+                          help="Apply 0.5 correction to all cells when any cell is zero")
+
     # Serve
     p_serve = subparsers.add_parser("serve", help="Launch FastAPI REST server")
     p_serve.add_argument("--host", default="127.0.0.1")
     p_serve.add_argument("--port", type=int, default=8000)
 
     args = parser.parse_args(argv)
+
+    if args.command == "signal":
+        from faers_sentinel.disproportionality import calculate_signal
+        try:
+            outcome = calculate_signal(args.a, args.b, args.c, args.d, args.continuity_correction)
+        except ValueError as exc:
+            parser.error(str(exc))
+        print(json.dumps(outcome, indent=2, allow_nan=False))
+        return 0
 
     if args.command == "audit":
         payload = FrontierPayload(
